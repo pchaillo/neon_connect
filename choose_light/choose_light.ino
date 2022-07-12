@@ -117,26 +117,27 @@ void loop() {
             {
               bouton_1 = "on";
                 color_1 = 255 ;
-                color_2 = 255 ;
-                color_3 = 0;
+                color_2 = 0;
+                color_3 = 255;
             } 
             else if (header.indexOf("GET /01/off") >= 0) 
             {
               bouton_1 = "off";
-                color_1 = 255 ;
+                color_1 = sliderInt ;
                 color_2 = 0 ;
-                color_3 = 255;
+                color_3 = sliderInt;
             }
 
             else if (header.indexOf("GET /slider?value=") >= 0)
             {
-              Serial.println("TROP BIEN TROP BIEN");
+            //  Serial.println("TROP BIEN TROP BIEN");
               String text_raw = getValue(header, ' ', 1);
               String string_raw = getValue(text_raw, '=', 1);
               sliderInt = string_raw.toInt();
+              sliderValue = String(sliderInt);
 
-              Serial.println("Y:");
-              Serial.println(sliderInt);
+           //   Serial.println("Y:");
+             // Serial.println(sliderInt);
             // Serial.println(text2);
             }
 
@@ -204,8 +205,8 @@ void loop() {
         }
       }
     }
-    Serial.println("Usefull fata : ");
-    Serial.println(header);
+  //  Serial.println("Usefull fata : ");
+   // Serial.println(header);
     // Clear the header variable
     header = "";
     // Close the connection
