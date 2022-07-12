@@ -44,7 +44,10 @@ String bouton_1 = "on";
 //String output14State = "off";
 //String output27State = "off";
 
+//int sliderValue = 10;
+//String sliderValueText = "10";
 String sliderValue = "10";
+volatile int sliderInt = 10;
 
 void setup() {
   // put your setup code here, to run once:
@@ -110,7 +113,7 @@ void loop() {
 
             // turns the GPIOs on and off
             //for bouton_1
-            if (header.indexOf("GET /01/on") >= 0) 
+            else if (header.indexOf("GET /01/on") >= 0) 
             {
               bouton_1 = "on";
                 color_1 = 255 ;
@@ -123,6 +126,18 @@ void loop() {
                 color_1 = 255 ;
                 color_2 = 0 ;
                 color_3 = 255;
+            }
+
+            else if (header.indexOf("GET /slider?value=") >= 0)
+            {
+              Serial.println("TROP BIEN TROP BIEN");
+              String text_raw = getValue(header, ' ', 1);
+              String string_raw = getValue(text_raw, '=', 1);
+              sliderInt = string_raw.toInt();
+
+              Serial.println("Y:");
+              Serial.println(sliderInt);
+            // Serial.println(text2);
             }
 
             // Display the HTML web page
@@ -146,13 +161,16 @@ void loop() {
             client.println(".slider::-webkit-slider-thumb {-webkit-appearance: none; appearance: none; width: 35px; height: 35px; background: #003249; cursor: pointer;}");
             client.println(".slider::-moz-range-thumb { width: 35px; height: 35px; background: #003249; cursor: pointer; }</style>");
                     
-             client.println("</head>");
+            client.println("</head>");
+
+            client.println("<script> function updateSlider() { var sliderValue = document.getElementById(\"pwmSlider\").value;document.getElementById(\"textSliderValue\").innerHTML = sliderValue;console.log(sliderValue);var xhr = new XMLHttpRequest();xhr.open(\"GET\", \"/slider?value=\"+sliderValue, true);xhr.send(); return sliderValue} </script>");
 
             // Web Page Heading
             client.println("<body><h1> Mera Neon </h1>");
 
             client.println("<p><span id=textSliderValue>" + sliderValue+ "</span></p>"); // creation du slider
-            client.println("<p><input type=\"range\" onchange=\"updateSliderPWM(this)\" id=\"pwmSlider\" min=\"0\" max=\"255\" value="+sliderValue+"\" step=\"1\" class=\"slider\"></p>");
+            client.println("<p><input type=\"range\" onchange=\"updateSlider()\"  id=\"pwmSlider\" min=\"0\" max=\"255\" value="+sliderValue+"\" step=\"1\" class=\"slider\"></p>");
+            client.println("<p><a href=\"/12/\"updateSlider()><button class=\"button\">ON</button></a></p>");
 
             // Display current state, and ON/OFF buttons for builtin led  
             client.println("<p> Led In - State " + Led_In_State + "</p>");
@@ -186,6 +204,7 @@ void loop() {
         }
       }
     }
+    Serial.println("Usefull fata : ");
     Serial.println(header);
     // Clear the header variable
     header = "";
@@ -198,7 +217,23 @@ void loop() {
      Fire2012();
      FastLED.show();
      FastLED.delay(1000 / FRAMES_PER_SECOND);
- }
+
+ /*    Serial.println("\n");
+     Serial.print("Valeur du slider : ");
+     Serial.println(sliderValue);
+     Serial.println("\n"); */
+     }
+
+/*
+String sendPosition(String sliderValue) {
+  /*console.log(slider+": "+value);
+
+  var request = new XMLHttpRequest();
+  request.open("POST", "https://foo.bar/");
+  request.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+  request.send(encodeURI(slider)+"="+value);
+  client.println("<p><a href=\"/12/"+sliderValue+"\"></a></p>");
+}*/
 
 void ledScenario(void ) { /* function ledScenario */
  ////LEDS Strip scenario
@@ -255,4 +290,20 @@ void Fire2012()
       }
       leds[pixelnumber] = color;
     }
+}
+
+String getValue(String data, char separator, int index)
+{
+    int found = 0;
+    int strIndex[] = { 0, -1 };
+    int maxIndex = data.length() - 1;
+
+    for (int i = 0; i <= maxIndex && found <= index; i++) {
+        if (data.charAt(i) == separator || i == maxIndex) {
+            found++;
+            strIndex[0] = strIndex[1] + 1;
+            strIndex[1] = (i == maxIndex) ? i+1 : i;
+        }
+    }
+    return found > index ? data.substring(strIndex[0], strIndex[1]) : "";
 }
