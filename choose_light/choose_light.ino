@@ -41,6 +41,8 @@ String header;
 //change the pins for esp8266
 String Led_In_State = "on";
 String bouton_1 = "on";
+String bouton_2 = "on";
+
 //String output14State = "off";
 //String output27State = "off";
 
@@ -111,7 +113,7 @@ void loop() {
               digitalWrite(LED_BUILTIN, HIGH);
             }
 
-            // turns the GPIOs on and off
+
             //for bouton_1
             else if (header.indexOf("GET /01/on") >= 0) 
             {
@@ -126,6 +128,17 @@ void loop() {
                 color_1 = 0 ;
                 color_2 = 0 ; // sliderInt
                 color_3 = 255;
+            }
+
+            //for bouton_2
+            else if (header.indexOf("GET /02/on") >= 0) 
+            {
+              bouton_2 = "on";
+            } 
+            else if (header.indexOf("GET /02/off") >= 0) 
+            {
+              bouton_2 = "off";
+
             }
 
             else if (header.indexOf("GET /slider?value=") >= 0)
@@ -150,10 +163,10 @@ void loop() {
             client.println("<style>html { font-family: Helvetica; display: inline-block; margin: 0px auto; text-align: center;}");
             client.println(".button { background-color: #4CAF50; border: none; color: white; padding: 16px 40px;");
             client.println("text-decoration: none; font-size: 30px; margin: 2px; cursor: pointer;}");
-            client.println(".button2 {background-color: #555555;}");
+            client.println(".button2 {background-color: #555555;}"); // Donne la couleur du bouton cliqué
             //client.println(".button2 {background-color: #555555;}</style>");
 
-            // TEST POUR slider 
+            // Code slider 
             /*
             client.println("<p><div class=\"/ard rangeslider P9\"></div></p><p><div class=\"ard rangeslider P10\"></div></p><p><div class=\"ard rangeslider P11\"></div></p> "); 
             client.println("<p><div class=\"ard rangeslider P9 value-50 range-0-100\"></div></p>");
@@ -161,9 +174,7 @@ void loop() {
             client.println(".slider { -webkit-appearance: none; margin: 14px; width: 360px; height: 25px; background: #FFD65C; outline: none; -webkit-transition: .2s; transition: opacity .2s;}");
             client.println(".slider::-webkit-slider-thumb {-webkit-appearance: none; appearance: none; width: 35px; height: 35px; background: #003249; cursor: pointer;}");
             client.println(".slider::-moz-range-thumb { width: 35px; height: 35px; background: #003249; cursor: pointer; }</style>");
-                    
             client.println("</head>");
-
             client.println("<script> function updateSlider() { var sliderValue = document.getElementById(\"pwmSlider\").value;document.getElementById(\"textSliderValue\").innerHTML = sliderValue;console.log(sliderValue);var xhr = new XMLHttpRequest();xhr.open(\"GET\", \"/slider?value=\"+sliderValue, true);xhr.send(); return sliderValue} </script>");
 
             // Web Page Heading
@@ -171,10 +182,10 @@ void loop() {
 
             client.println("<p><span id=textSliderValue>" + sliderValue+ "</span></p>"); // creation du slider
             client.println("<p><input type=\"range\" onchange=\"updateSlider()\"  id=\"pwmSlider\" min=\"0\" max=\"255\" value="+sliderValue+"\" step=\"1\" class=\"slider\"></p>");
-            client.println("<p><a href=\"/12/\"updateSlider()><button class=\"button\">ON</button></a></p>");
+          //  client.println("<p><a href=\"/12/\"updateSlider()><button class=\"button\">ON</button></a></p>");
 
             // Display current state, and ON/OFF buttons for builtin led  
-            client.println("<p> Led In - State " + Led_In_State + "</p>");
+            client.println("<p> Test Connexion : Led In - State " + Led_In_State + "</p>");
             // If the output12State is off, it displays the ON button       
             if (Led_In_State=="on") {
               client.println("<p><a href=\"/12/off\"><button class=\"button\">ON</button></a></p>");
@@ -182,7 +193,7 @@ void loop() {
               client.println("<p><a href=\"/12/on\"><button class=\"button button2\">OFF</button></a></p>");
             } 
 
-            // Display current state, and ON/OFF buttons for bouton_1
+            // Display current state, and ON/OFF buttons for bouton_1 => Choix couleur branche
             client.println("<p> LED color - State " + bouton_1 + "</p>");
             // If the output12State is off, it displays the ON button       
             if (bouton_1=="on") {
@@ -190,6 +201,16 @@ void loop() {
             } else {
               client.println("<p><a href=\"/01/on\"><button class=\"button button2\">OFF</button></a></p>");
             } 
+
+            // Display current state, and ON/OFF buttons for bouton_2 => Choix couleur flamme
+            client.println("<p> LED color - Flammes " + bouton_2 + "</p>");
+            // If the output12State is off, it displays the ON button       
+            if (bouton_2=="on") {
+              client.println("<p><a href=\"/02/off\"><button class=\"button\">ON</button></a></p>");
+            } else {
+              client.println("<p><a href=\"/02/on\"><button class=\"button button2\">OFF</button></a></p>");
+            } 
+
 
             client.println("</body></html>");
             
@@ -252,7 +273,26 @@ void ledScenario(void ) { /* function ledScenario */
 
    if (i >= NUM_LEDS_FIRE)
 {leds[i].setRGB(color_1, color_2, color_3);
-//leds[i].setHue(sliderInt);
+//leds[i].setHue(sliderInt);  // change le mauvais truc
+//leds[i] = HSV(leds[i].color,leds[i].saturation,sliderInt);
+}
+//else{
+  else if (bouton_2 == "off"){
+
+  int r = leds[i].r;
+  int g = leds[i].g;
+  int b = leds[i].b;
+
+  /*leds[i].r = b; // FLAMME BLEUE
+  leds[i].b = r; */
+ 
+  leds[i].b = r; // FLAMME VIOLETTE 1 
+
+ /* leds[i].b = r; // FLAMME VIOLETTE 2
+  leds[i].g = b; */
+
+/*  leds[i].r = b; // FLAMME VERTE
+  leds[i].g = r; */
 }
    
  //  delay(100);
