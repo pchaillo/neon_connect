@@ -3,7 +3,7 @@
 //Constants
 #define NUM_STRIPS 1
 #define NUM_LEDS 29
-#define BRIGHTNESS 10
+#define BRIGHTNESS 10 // Pour choisir l'intensité des couleurs
 #define LED_TYPE WS2812B
 #define COLOR_ORDER GRB//BRG//RGB
 #define FASTLED_ALLOW_INTERRUPTS 0
@@ -116,16 +116,16 @@ void loop() {
             else if (header.indexOf("GET /01/on") >= 0) 
             {
               bouton_1 = "on";
-                color_1 = 255 ;
-                color_2 = 0;
-                color_3 = 255;
+                color_1 = 0 ;
+                color_2 = 255;
+                color_3 = 0;
             } 
             else if (header.indexOf("GET /01/off") >= 0) 
             {
               bouton_1 = "off";
-                color_1 = sliderInt ;
-                color_2 = 0 ;
-                color_3 = sliderInt;
+                color_1 = 0 ;
+                color_2 = 0 ; // sliderInt
+                color_3 = 255;
             }
 
             else if (header.indexOf("GET /slider?value=") >= 0)
@@ -214,15 +214,16 @@ void loop() {
     Serial.println("Client disconnected.");
     Serial.println(""); }
 
-     ledScenario();
      Fire2012();
+     ledScenario();
+     FastLED.setBrightness(sliderInt);
      FastLED.show();
      FastLED.delay(1000 / FRAMES_PER_SECOND);
 
- /*    Serial.println("\n");
+     Serial.println("\n");
      Serial.print("Valeur du slider : ");
      Serial.println(sliderValue);
-     Serial.println("\n"); */
+     Serial.println("\n"); 
      }
 
 /*
@@ -250,7 +251,9 @@ void ledScenario(void ) { /* function ledScenario */
    }*/
 
    if (i >= NUM_LEDS_FIRE)
-{leds[i].setRGB(color_1, color_2, color_3);}
+{leds[i].setRGB(color_1, color_2, color_3);
+//leds[i].setHue(sliderInt);
+}
    
  //  delay(100);
   // leds[i] = CRGB::Black;
