@@ -11,14 +11,13 @@
 #define FRAMES_PER_SECOND 60
 #define COOLING 55
 #define SPARKING 120
-#define NUM_LEDS_FIRE 19
 #define FRAMES_PER_SECOND 60
 //Parameters
 const int stripPin  = D6;
 //Variables
-bool gReverseDirection  = false;
+bool gReverseDirection  = false; // Bolléen pour inverser la direction du feu
 //Objects
-CRGB leds[NUM_LEDS];
+
 // for LED
 
 #include <ESP8266WiFi.h>
@@ -51,21 +50,29 @@ String bouton_2 = "on";
 String sliderValue = "10";
 volatile int sliderInt = 10;
 
+#define nb_segment 4
+#define NUM_LEDS_FIRE 27 // 19
+volatile byte feu_tab[nb_segment][2] =  {{0,7},{15,8},{16,20},{26,17}}; //[2][n] : [2] => debut et fin , [nb_segment] => nombre de segments 
+volatile byte feu_ind[NUM_LEDS_FIRE];
+CRGB leds[NUM_LEDS];
+CRGB leds_memory[NUM_LEDS_FIRE];
+
 void setup() {
   // put your setup code here, to run once:
-   Serial.begin(115200);
+   Serial.begin(115200); // TEST PORT SERIE
    pinMode(LED_BUILTIN, OUTPUT);
    delay(1000);
-   Serial.println("serial test...");
+   Serial.println("serial test..."); // TEST PORT SERIE
 
    // Connect to Wi-Fi network with SSID and password
-  Serial.print("Setting AP (Access Point)…");
+ // Serial.print("Setting AP (Access Point)…"); // TEST PORT SERIE
   // Remove the password parameter, if you want the AP (Access Point) to be open
   WiFi.softAP(ssid, password);
 
   IPAddress IP = WiFi.softAPIP();
-  Serial.print("AP IP address: ");
-  Serial.println(IP);
+
+  /*Serial.print("AP IP address: ");
+  Serial.println(IP);*/ // TEST PORT SERIE
 
   FastLED.addLeds<LED_TYPE, stripPin, COLOR_ORDER>(leds, NUM_LEDS);
   FastLED.setBrightness(  BRIGHTNESS );
@@ -78,12 +85,12 @@ void loop() {
     WiFiClient client = server.available();   // Listen for incoming clients
 
     if (client) {                             // If a new client connects,
-    Serial.println("New Client.");          // print a message out in the serial port
+   // Serial.println("New Client.");          // print a message out in the serial port // TEST PORT SERIE
     String currentLine = "";                // make a String to hold incoming data from the client
     while (client.connected()) {            // loop while the client's connected
       if (client.available()) {             // if there's bytes to read from the client,
         char c = client.read();             // read a byte, then
-        Serial.write(c);                    // print it out the serial monitor
+   //     Serial.write(c);                    // print it out the serial monitor // TEST PORT SERIE
         header += c;
         if (c == '\n') {                    // if the byte is a newline character
           // if the current line is blank, you got two newline characters in a row.
@@ -100,14 +107,14 @@ void loop() {
             //for LED_BUILTIN
             if (header.indexOf("GET /12/on") >= 0) 
             {
-              Serial.println("LED_BUILTIN on");
+          //    Serial.println("LED_BUILTIN on"); // TEST PORT SERIE
               Led_In_State = "on";
             //  digitalWrite(output12, LOW);
               digitalWrite(LED_BUILTIN, LOW);
             } 
             else if (header.indexOf("GET /12/off") >= 0) 
             {
-              Serial.println("LED_BUILTIN off");
+           //   Serial.println("LED_BUILTIN off"); // TEST PORT SERIE
               Led_In_State = "off";
              // digitalWrite(output12, HIGH);
               digitalWrite(LED_BUILTIN, HIGH);
@@ -226,26 +233,34 @@ void loop() {
         }
       }
     }
-  //  Serial.println("Usefull fata : ");
-   // Serial.println(header);
+  //  Serial.println("Usefull fata : "); // TEST PORT SERIE
+   // Serial.println(header); // TEST PORT SERIE
     // Clear the header variable
     header = "";
     // Close the connection
     client.stop();
-    Serial.println("Client disconnected.");
-    Serial.println(""); }
+    
+/*    Serial.println("Client disconnected.");
+    Serial.println("");  */ } // IF CLIENT
 
+    create_fire_led_tab();
+    Serial.println("Boucle");
+    for(int u = 0; u < NUM_LEDS_FIRE;u++){
+    Serial.println(feu_ind[u]); }
+    Serial.println("Fin Feu_Ind");
      Fire2012();
-     ledScenario();
+    // ledScenario();
+     led_ASSIGMENT();
      FastLED.setBrightness(sliderInt);
      FastLED.show();
      FastLED.delay(1000 / FRAMES_PER_SECOND);
 
-     Serial.println("\n");
+   /*  Serial.println("\n"); // TEST PORT SERIE slider
      Serial.print("Valeur du slider : ");
      Serial.println(sliderValue);
-     Serial.println("\n"); 
-     }
+     Serial.println("\n");  */
+     
+     } // LOOP
 
 /*
 String sendPosition(String sliderValue) {
@@ -257,6 +272,46 @@ String sendPosition(String sliderValue) {
   request.send(encodeURI(slider)+"="+value);
   client.println("<p><a href=\"/12/"+sliderValue+"\"></a></p>");
 }*/
+
+void create_fire_led_tab(void){
+  byte ind = 0;
+    for (int y = 0; y < nb_segment; y++) {
+      /* for(int ind = 0; ind < NUM_LEDS_FIRE;ind++){
+          fire_ind[ind] = 
+       } */
+       Serial.println(feu_tab[y][0]);
+       Serial.println(feu_tab[y][1]);
+       if (feu_tab[y][0] < feu_tab[y][1]){
+              for (int k = feu_tab[y][0] ; k < feu_tab[y][1] ; k++) {
+                   feu_ind[ind] = k;
+                   ind = ind + 1;
+  }
+       }
+       else{
+               for (int k = feu_tab[y][0] ; k > feu_tab[y][1]-2 ; k--) { // -1 pertinent ici ? // - 2 ?
+                  //ind = ind + 1;
+                  feu_ind[ind] = k;
+                  ind = ind + 1;
+  }
+       }
+}
+}
+
+void led_ASSIGMENT(void ) { /* function ledScenario */
+ ////LEDS Strip scenario
+ for (int i = 0; i < NUM_LEDS; i++) {
+
+   if (i >= NUM_LEDS_FIRE)
+{leds[i].setRGB(color_1, color_2, color_3);}
+//else{
+  else if (bouton_2 == "off"){
+    
+  //  CRGB leds_memory[NUM_LEDS_FIRE];
+
+    
+}
+ }
+}
 
 void ledScenario(void ) { /* function ledScenario */
  ////LEDS Strip scenario
@@ -330,9 +385,10 @@ void Fire2012()
       if( gReverseDirection ) {
         pixelnumber = (NUM_LEDS_FIRE-1) - j;
       } else {
-        pixelnumber = j;
+       // pixelnumber = j; // CLASSIQUE
+       pixelnumber = feu_ind[j];
       }
-      leds[pixelnumber] = color;
+      leds[pixelnumber] = color; // CLASSIQUE
     }
 }
 
